@@ -285,6 +285,7 @@ func DumpArtToFile(apath string) (string, string, string, string, string) {
 			n3, err := g.Write(pic.Picture)
 			CheckError(err, "DumpArtToFile: newdumpOutfile2 Write has fucked up")
 			h3, err := h.Write(pic.Picture)
+			CheckError(err, "DumpArtToFile: newdumpOutfile2 Write has fucked up")
 			g.Close()
 			h.Close()
 			fmt.Println(n3, "DumpArtToFile: bytes written successfully")
