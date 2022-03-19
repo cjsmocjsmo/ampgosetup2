@@ -228,28 +228,28 @@ func UUID() (string, error) {
 // 	return outfile
 // }
 
-type Fjpg struct {
-	exists bool
-	path   string
-}
+// type Fjpg struct {
+// 	exists bool
+// 	path   string
+// }
 
-func folderjpg_check(apath string) Fjpg {
-	fjpg := "folder.jpg"
-	dir, _ := filepath.Split(apath)
-	testfile := dir + fjpg
-	_, error := os.Stat(testfile)
-	if os.IsNotExist(error) {
-		var pic Fjpg
-		pic.exists = false
-		pic.path = testfile
-		return pic
-	} else {
-		var pic Fjpg
-		pic.exists = true
-		pic.path = testfile
-		return pic
-	}
-}
+// func folderjpg_check(apath string) Fjpg {
+// 	fjpg := "folder.jpg"
+// 	dir, _ := filepath.Split(apath)
+// 	testfile := dir + fjpg
+// 	_, error := os.Stat(testfile)
+// 	if os.IsNotExist(error) {
+// 		var pic Fjpg
+// 		pic.exists = false
+// 		pic.path = testfile
+// 		return pic
+// 	} else {
+// 		var pic Fjpg
+// 		pic.exists = true
+// 		pic.path = testfile
+// 		return pic
+// 	}
+// }
 
 func DumpArtToFile(apath string) (string, string, string, string, string) {
 	tag, err := id3v2.Open(apath, id3v2.Options{Parse: true})
