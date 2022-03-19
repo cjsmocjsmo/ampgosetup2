@@ -288,6 +288,7 @@ func DumpArtToFile(apath string) (string, string, string, string, string) {
 			g.Close()
 			h.Close()
 			fmt.Println(n3, "DumpArtToFile: bytes written successfully")
+			fmt.Println(h3, "DumpArtToFile: bytes written successfully")
 		}
 		outfile22 := resizeImage(newdumpOutFile2, newdumpOutFileThumb)
 		CreateFolderJpgImageInfoMap(outfile22)
