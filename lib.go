@@ -1,4 +1,4 @@
-package ampgosetup
+package ampgosetup2
 
 import (
 	"context"
