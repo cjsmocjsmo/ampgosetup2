@@ -3,21 +3,24 @@ package ampgosetup2
 import (
 	"context"
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/bogem/id3v2"
-	"github.com/disintegration/imaging"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/bogem/id3v2"
+	// "github.com/disintegration/imaging"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // Tagmap exported
@@ -82,6 +85,7 @@ type AlbVieW2 struct {
 type Imageinfomap struct {
 	Dirpath       string `bson:"dirpath"`
 	Filename      string `bson:"filename"`
+	Image         string `bson:"image"`
 	Imagesize     string `bson:"imagesize"`
 	ImageHttpAddr string `bson:"imageHttpAddr"`
 	Index         string `bson:"index"`
@@ -212,16 +216,16 @@ func UUID() (string, error) {
 	return boo, nil
 }
 
-func resizeImage(infile string, outfile string) string {
-	pic, err := imaging.Open(infile)
-	if err != nil {
-		return os.Getenv("AMPGO_NO_ART_PIC_PATH")
-	}
-	sjImage := imaging.Resize(pic, 200, 0, imaging.Lanczos)
-	err = imaging.Save(sjImage, outfile)
-	CheckError(err, "resizeImage: image save has fucked up")
-	return outfile
-}
+// func resizeImage(infile string, outfile string) string {
+// 	pic, err := imaging.Open(infile)
+// 	if err != nil {
+// 		return os.Getenv("AMPGO_NO_ART_PIC_PATH")
+// 	}
+// 	sjImage := imaging.Resize(pic, 200, 0, imaging.Lanczos)
+// 	err = imaging.Save(sjImage, outfile)
+// 	CheckError(err, "resizeImage: image save has fucked up")
+// 	return outfile
+// }
 
 type Fjpg struct {
 	exists bool
@@ -263,14 +267,16 @@ func DumpArtToFile(apath string) (string, string, string, string, string) {
 		CreateFolderJpgImageInfoMap(folderjpgcheck.path)
 		return artist, album, title, genre, folderjpgcheck.path
 	} else {
-		dumpOutFile2 := os.Getenv("AMPGO_THUMB_PATH") + tag.Artist() + "_-_" + tag.Album() + ".jpg"
-		newdumpOutFile2 := strings.Replace(dumpOutFile2, " ", "_", -1)
-		dumpOutFileThumb := os.Getenv("AMPGO_THUMB_PATH") + tag.Artist() + "_-_" + tag.Album() + "_thumb.jpg"
-		newdumpOutFileThumb := strings.Replace(dumpOutFileThumb, " ", "_", -1)
+		// dumpOutFile2 := os.Getenv("AMPGO_THUMB_PATH") + tag.Artist() + "_-_" + tag.Album() + ".jpg"
+		// newdumpOutFile2 := strings.Replace(dumpOutFile2, " ", "_", -1)
+		// dumpOutFileThumb := os.Getenv("AMPGO_THUMB_PATH") + tag.Artist() + "_-_" + tag.Album() + "_thumb.jpg"
+		// newdumpOutFileThumb := strings.Replace(dumpOutFileThumb, " ", "_", -1)
+
 		pictures := tag.GetFrames(tag.CommonID("Attached picture"))
 
-		dir, _ := filepath.Split(apath)
-		newfolderjpg_path := dir + "/folder.jpg"
+		// dir, _ := filepath.Split(apath)
+		// newfolderjpg_path := dir + "/folder.jpg"
+		var b64image string
 		for _, f := range pictures {
 			pic, ok := f.(id3v2.PictureFrame)
 			if !ok {
@@ -278,22 +284,24 @@ func DumpArtToFile(apath string) (string, string, string, string, string) {
 				CreateFolderJpgImageInfoMap(os.Getenv("AMPGO_NO_ART_PIC_PATH"))
 				return artist, album, title, genre, os.Getenv("AMPGO_NO_ART_PIC_PATH")
 			}
-			g, err := os.Create(newdumpOutFile2)
-			CheckError(err, "DumpArtToFile: Unable to create newdumpOutFile2")
-			h, err := os.Create(newfolderjpg_path)
-			CheckError(err, "DumpArtToFile: Unable to create newdumpOutFile2")
-			n3, err := g.Write(pic.Picture)
-			CheckError(err, "DumpArtToFile: newdumpOutfile2 Write has fucked up")
-			h3, err := h.Write(pic.Picture)
-			CheckError(err, "DumpArtToFile: newdumpOutfile2 Write has fucked up")
-			g.Close()
-			h.Close()
-			fmt.Println(n3, "DumpArtToFile: bytes written successfully")
-			fmt.Println(h3, "DumpArtToFile: bytes written successfully")
+			b64image = bytesToBase64(pic.Picture)
+
+			// g, err := os.Create(newdumpOutFile2)
+			// CheckError(err, "DumpArtToFile: Unable to create newdumpOutFile2")
+			// h, err := os.Create(newfolderjpg_path)
+			// CheckError(err, "DumpArtToFile: Unable to create newdumpOutFile2")
+			// n3, err := g.Write(pic.Picture)
+			// CheckError(err, "DumpArtToFile: newdumpOutfile2 Write has fucked up")
+			// h3, err := h.Write(pic.Picture)
+			// CheckError(err, "DumpArtToFile: newdumpOutfile2 Write has fucked up")
+			// g.Close()
+			// h.Close()
+			// fmt.Println(n3, "DumpArtToFile: bytes written successfully")
+			// fmt.Println(h3, "DumpArtToFile: bytes written successfully")
 		}
-		outfile22 := resizeImage(newdumpOutFile2, newdumpOutFileThumb)
-		CreateFolderJpgImageInfoMap(outfile22)
-		return artist, album, title, genre, outfile22
+		// outfile22 := resizeImage(newdumpOutFile2, newdumpOutFileThumb)
+		// CreateFolderJpgImageInfoMap(outfile22)
+		return artist, album, title, genre, b64image
 	}
 }
 
@@ -682,12 +690,14 @@ func CreateRandomPicsDB() []Imageinfomap {
 func create_image_info_map(i int, afile string, page int) Imageinfomap {
 	itype := get_type(afile)
 	dir, filename := filepath.Split(afile)
+	image := convertToBase64(afile)
 	image_size := get_image_size(afile)
 	image_http_path := create_image_http_addr(afile)
 	ii := i + 1
 	var ImageInfoMap Imageinfomap
 	ImageInfoMap.Dirpath = dir
 	ImageInfoMap.Filename = filename
+	ImageInfoMap.Image = image
 	ImageInfoMap.Imagesize = image_size
 	ImageInfoMap.ImageHttpAddr = image_http_path
 	ImageInfoMap.Index = strconv.Itoa(ii)
@@ -698,17 +708,21 @@ func create_image_info_map(i int, afile string, page int) Imageinfomap {
 	defer Close(client, ctx, cancel)
 	_, err2 := InsertOne(client, ctx, "coverart", "coverart", ImageInfoMap)
 	CheckError(err2, "create_image_info_map: coverart insertion has failed")
+	_, err3 := InsertOne(client, ctx, "foldercoverart", "foldercoverart", ImageInfoMap)
+	CheckError(err3, "create_image_info_map: coverart insertion has failed")
 	return ImageInfoMap
 }
 
 func CreateFolderJpgImageInfoMap(afile string) {
 	itype := get_type(afile)
 	dir, filename := filepath.Split(afile)
+	image := convertToBase64(afile)
 	image_size := get_image_size(afile)
 	image_http_path := create_image_http_addr(afile)
 	var ImageInfoMap Imageinfomap
 	ImageInfoMap.Dirpath = dir
 	ImageInfoMap.Filename = filename
+	ImageInfoMap.Image = image
 	ImageInfoMap.Imagesize = image_size
 	ImageInfoMap.ImageHttpAddr = image_http_path
 	ImageInfoMap.IType = itype
@@ -717,6 +731,41 @@ func CreateFolderJpgImageInfoMap(afile string) {
 	defer Close(client, ctx, cancel)
 	_, err2 := InsertOne(client, ctx, "foldercoverart", "foldercoverart", ImageInfoMap)
 	CheckError(err2, "create_image_info_map: coverart insertion has failed")
+}
+
+func bytesToBase64(b []byte) string {
+	var b64 string
+	mimeType := http.DetectContentType(b)
+	switch mimeType {
+	case "image/jpeg":
+		b64 += "data:image/jpeg;base64,"
+	case "image/png":
+		b64 += "data:image/png;base64,"
+	}
+	b64 += ToBase64(b)
+	return b64
+
+}
+
+func ToBase64(b []byte) string {
+	return base64.StdEncoding.EncodeToString(b)
+}
+
+func convertToBase64(apath string) string {
+	bytes, err := ioutil.ReadFile(apath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var b64 string
+	mimeType := http.DetectContentType(bytes)
+	switch mimeType {
+	case "image/jpeg":
+		b64 += "data:image/jpeg;base64,"
+	case "image/png":
+		b64 += "data:image/png;base64,"
+	}
+	b64 += ToBase64(bytes)
+	return b64
 }
 
 func get_type(afile string) string {
