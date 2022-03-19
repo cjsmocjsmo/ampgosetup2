@@ -25,21 +25,22 @@ import (
 
 // Tagmap exported
 type Tagmap struct {
-	Dirpath     string `bson:"dirpath"`
-	Filename    string `bson:"filename"`
-	Extension   string `bson:"extension"`
-	FileID      string `bson:"fileID"`
-	Filesize    string `bson:"filesize"`
-	Artist      string `bson:"artist"`
-	ArtistID    string `bson:"artistID"`
-	Album       string `bson:"album"`
-	AlbumID     string `bson:"albumID"`
-	Title       string `bson:"title"`
-	Genre       string `bson:"genre"`
-	TitlePage   string `bson:"titlepage"`
-	PicID       string `bson:"picID"`
-	PicDB       string `bson:"picDB"`
-	PicPath     string `bson:"picPath"`
+	Dirpath   string `bson:"dirpath"`
+	Filename  string `bson:"filename"`
+	Extension string `bson:"extension"`
+	FileID    string `bson:"fileID"`
+	Filesize  string `bson:"filesize"`
+	Artist    string `bson:"artist"`
+	ArtistID  string `bson:"artistID"`
+	Album     string `bson:"album"`
+	AlbumID   string `bson:"albumID"`
+	Title     string `bson:"title"`
+	Genre     string `bson:"genre"`
+	TitlePage string `bson:"titlepage"`
+	Image     string `bson:"image"`
+	// PicID       string `bson:"picID"`
+	// PicDB       string `bson:"picDB"`
+	// PicPath     string `bson:"picPath"`
 	PicHttpAddr string `bson:"picHttpAddr"`
 	Idx         string `bson:"idx"`
 	HttpAddr    string `bson:"httpaddr"`
@@ -262,57 +263,57 @@ func DumpArtToFile(apath string) (string, string, string, string, string) {
 	album := tag.Album()
 	title := tag.Title()
 	genre := tag.Genre()
-	folderjpgcheck := folderjpg_check(apath)
-	if folderjpgcheck.exists {
-		CreateFolderJpgImageInfoMap(folderjpgcheck.path)
-		return artist, album, title, genre, folderjpgcheck.path
-	} else {
-		// dumpOutFile2 := os.Getenv("AMPGO_THUMB_PATH") + tag.Artist() + "_-_" + tag.Album() + ".jpg"
-		// newdumpOutFile2 := strings.Replace(dumpOutFile2, " ", "_", -1)
-		// dumpOutFileThumb := os.Getenv("AMPGO_THUMB_PATH") + tag.Artist() + "_-_" + tag.Album() + "_thumb.jpg"
-		// newdumpOutFileThumb := strings.Replace(dumpOutFileThumb, " ", "_", -1)
+	// folderjpgcheck := folderjpg_check(apath)
+	// if folderjpgcheck.exists {
+	// 	CreateFolderJpgImageInfoMap(folderjpgcheck.path)
+	// 	return artist, album, title, genre, folderjpgcheck.path
+	// } else {
+	// 	// dumpOutFile2 := os.Getenv("AMPGO_THUMB_PATH") + tag.Artist() + "_-_" + tag.Album() + ".jpg"
+	// 	// newdumpOutFile2 := strings.Replace(dumpOutFile2, " ", "_", -1)
+	// 	// dumpOutFileThumb := os.Getenv("AMPGO_THUMB_PATH") + tag.Artist() + "_-_" + tag.Album() + "_thumb.jpg"
+	// 	// newdumpOutFileThumb := strings.Replace(dumpOutFileThumb, " ", "_", -1)
 
-		pictures := tag.GetFrames(tag.CommonID("Attached picture"))
+	pictures := tag.GetFrames(tag.CommonID("Attached picture"))
 
-		// dir, _ := filepath.Split(apath)
-		// newfolderjpg_path := dir + "/folder.jpg"
-		var b64image string
-		for _, f := range pictures {
-			pic, ok := f.(id3v2.PictureFrame)
-			if !ok {
-				log.Fatal("DumpArtToFile: Couldn't assert picture frame")
-				CreateFolderJpgImageInfoMap(os.Getenv("AMPGO_NO_ART_PIC_PATH"))
-				return artist, album, title, genre, os.Getenv("AMPGO_NO_ART_PIC_PATH")
-			}
-			b64image = bytesToBase64(pic.Picture)
-
-			// g, err := os.Create(newdumpOutFile2)
-			// CheckError(err, "DumpArtToFile: Unable to create newdumpOutFile2")
-			// h, err := os.Create(newfolderjpg_path)
-			// CheckError(err, "DumpArtToFile: Unable to create newdumpOutFile2")
-			// n3, err := g.Write(pic.Picture)
-			// CheckError(err, "DumpArtToFile: newdumpOutfile2 Write has fucked up")
-			// h3, err := h.Write(pic.Picture)
-			// CheckError(err, "DumpArtToFile: newdumpOutfile2 Write has fucked up")
-			// g.Close()
-			// h.Close()
-			// fmt.Println(n3, "DumpArtToFile: bytes written successfully")
-			// fmt.Println(h3, "DumpArtToFile: bytes written successfully")
+	// dir, _ := filepath.Split(apath)
+	// newfolderjpg_path := dir + "/folder.jpg"
+	var b64image string
+	for _, f := range pictures {
+		pic, ok := f.(id3v2.PictureFrame)
+		if !ok {
+			log.Fatal("DumpArtToFile: Couldn't assert picture frame")
+			// CreateFolderJpgImageInfoMap(os.Getenv("AMPGO_NO_ART_PIC_PATH"))
+			// return artist, album, title, genre
 		}
-		// outfile22 := resizeImage(newdumpOutFile2, newdumpOutFileThumb)
-		// CreateFolderJpgImageInfoMap(outfile22)
-		return artist, album, title, genre, b64image
+		b64image = bytesToBase64(pic.Picture)
+
+		// g, err := os.Create(newdumpOutFile2)
+		// CheckError(err, "DumpArtToFile: Unable to create newdumpOutFile2")
+		// h, err := os.Create(newfolderjpg_path)
+		// CheckError(err, "DumpArtToFile: Unable to create newdumpOutFile2")
+		// n3, err := g.Write(pic.Picture)
+		// CheckError(err, "DumpArtToFile: newdumpOutfile2 Write has fucked up")
+		// h3, err := h.Write(pic.Picture)
+		// CheckError(err, "DumpArtToFile: newdumpOutfile2 Write has fucked up")
+		// g.Close()
+		// h.Close()
+		// fmt.Println(n3, "DumpArtToFile: bytes written successfully")
+		// fmt.Println(h3, "DumpArtToFile: bytes written successfully")
 	}
+	// outfile22 := resizeImage(newdumpOutFile2, newdumpOutFileThumb)
+	// CreateFolderJpgImageInfoMap(outfile22)
+	return artist, album, title, genre, b64image
+
 }
 
 func TaGmap(apath string, apage int, idx int) (TaGmaP Tagmap) {
-	artist, album, title, genre, picpath := DumpArtToFile(apath)
+	artist, album, title, genre, image := DumpArtToFile(apath)
 	if artist != "None" && album != "None" && title != "None" {
 		log.Println(apath)
 		page := strconv.Itoa(apage)
 		index := strconv.Itoa(idx)
 		uuid, _ := UUID()
-		pichttpaddr := os.Getenv("AMPGO_SERVER_ADDRESS") + ":" + os.Getenv("AMPGO_SERVER_PORT") + picpath[5:]
+		// pichttpaddr := os.Getenv("AMPGO_SERVER_ADDRESS") + ":" + os.Getenv("AMPGO_SERVER_PORT") + picpath[5:]
 		fname, size := getFileInfo(apath)
 		httpaddr := os.Getenv("AMPGO_SERVER_ADDRESS") + ":" + os.Getenv("AMPGO_SERVER_PORT") + apath[5:]
 		TaGmaP.Dirpath = filepath.Dir(apath)
@@ -327,10 +328,11 @@ func TaGmap(apath string, apage int, idx int) (TaGmaP Tagmap) {
 		TaGmaP.Title = title
 		TaGmaP.Genre = genre
 		TaGmaP.TitlePage = page
-		TaGmaP.PicID = uuid
-		TaGmaP.PicDB = "None"
-		TaGmaP.PicPath = picpath
-		TaGmaP.PicHttpAddr = pichttpaddr
+		TaGmaP.Image = image
+		// TaGmaP.PicID = uuid
+		// TaGmaP.PicDB = "None"
+		// TaGmaP.PicPath = picpath
+		// TaGmaP.PicHttpAddr = pichttpaddr
 		TaGmaP.Idx = index
 		TaGmaP.HttpAddr = httpaddr
 		TaGmaP.Duration = "None"
@@ -497,12 +499,13 @@ func UpdateMainDB(m2 map[string]string) (Doko Tagmap) {
 	Doko.AlbumID = albID["albumID"]
 	Doko.Title = m2["title"]
 	Doko.Genre = m2["genre"]
-	Doko.PicID = m2["picID"]
-	Doko.PicDB = "thumbnails"
+	Doko.Image = m2["image"]
+	// Doko.PicID = m2["picID"]
+	// Doko.PicDB = "thumbnails"
 	Doko.TitlePage = m2["titlepage"]
 	Doko.Idx = m2["idx"]
-	Doko.PicPath = m2["picPath"]
-	Doko.PicHttpAddr = m2["picHttpAddr"]
+	// Doko.PicPath = m2["picPath"]
+	// Doko.PicHttpAddr = m2["picHttpAddr"]
 	Doko.HttpAddr = m2["httpaddr"]
 	Doko.Duration = duration["duration"]
 	// Doko.ArtStart = startsWith(m2["artist"])
