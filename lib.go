@@ -42,10 +42,10 @@ type Tagmap struct {
 	HttpAddr    string `bson:"httpaddr"`
 	Duration    string `bson:"duration"`
 
-	ArtStart string `bson:"artstart"`
-	AlbStart string `bson:"albstart"`
-	TitStart string `bson:"titstart"`
-	Howl     string `bson:"howl"`
+	// ArtStart string `bson:"artstart"`
+	// AlbStart string `bson:"albstart"`
+	// TitStart string `bson:"titstart"`
+	// Howl     string `bson:"howl"`
 }
 
 type ArtVieW2 struct {
@@ -247,7 +247,6 @@ func folderjpg_check(apath string) Fjpg {
 }
 
 func DumpArtToFile(apath string) (string, string, string, string, string) {
-	folderjpgcheck := folderjpg_check(apath)
 	tag, err := id3v2.Open(apath, id3v2.Options{Parse: true})
 	if err != nil {
 		log.Println(err)
@@ -255,39 +254,43 @@ func DumpArtToFile(apath string) (string, string, string, string, string) {
 		return "None", "None", "None", "None", "None"
 	}
 	defer tag.Close()
+	artist := tag.Artist()
+	album := tag.Album()
+	title := tag.Title()
+	genre := tag.Genre()
+	folderjpgcheck := folderjpg_check(apath)
 	if folderjpgcheck.exists {
-		artist := tag.Artist()
-		album := tag.Album()
-		title := tag.Title()
-		genre := tag.Genre()
-		albumart := folderjpgcheck.path
-		return artist, album, title, genre, albumart
+		CreateFolderJpgImageInfoMap(folderjpgcheck.path)
+		return artist, album, title, genre, folderjpgcheck.path
 	} else {
-		artist := tag.Artist()
-		album := tag.Album()
-		title := tag.Title()
-		genre := tag.Genre()
+		dumpOutFile2 := os.Getenv("AMPGO_THUMB_PATH") + tag.Artist() + "_-_" + tag.Album() + ".jpg"
+		newdumpOutFile2 := strings.Replace(dumpOutFile2, " ", "_", -1)
+		dumpOutFileThumb := os.Getenv("AMPGO_THUMB_PATH") + tag.Artist() + "_-_" + tag.Album() + "_thumb.jpg"
+		newdumpOutFileThumb := strings.Replace(dumpOutFileThumb, " ", "_", -1)
 		pictures := tag.GetFrames(tag.CommonID("Attached picture"))
-		newdumpOutFile2 := ""
-		newdumpOutFileThumb := ""
+
+		dir, _ := filepath.Split(apath)
+		newfolderjpg_path := dir + "/folder.jpg"
 		for _, f := range pictures {
 			pic, ok := f.(id3v2.PictureFrame)
 			if !ok {
 				log.Fatal("DumpArtToFile: Couldn't assert picture frame")
+				CreateFolderJpgImageInfoMap(os.Getenv("AMPGO_NO_ART_PIC_PATH"))
+				return artist, album, title, genre, os.Getenv("AMPGO_NO_ART_PIC_PATH")
 			}
-			dumpOutFile2 := os.Getenv("AMPGO_THUMB_PATH") + tag.Artist() + "_-_" + tag.Album() + ".jpg"
-			newdumpOutFile2 = strings.Replace(dumpOutFile2, " ", "_", -1)
-			dumpOutFileThumb := os.Getenv("AMPGO_THUMB_PATH") + tag.Artist() + "_-_" + tag.Album() + "_thumb.jpg"
-			newdumpOutFileThumb = strings.Replace(dumpOutFileThumb, " ", "_", -1)
 			g, err := os.Create(newdumpOutFile2)
 			CheckError(err, "DumpArtToFile: Unable to create newdumpOutFile2")
-			defer g.Close()
-
+			h, err := os.Create(newfolderjpg_path)
+			CheckError(err, "DumpArtToFile: Unable to create newdumpOutFile2")
 			n3, err := g.Write(pic.Picture)
 			CheckError(err, "DumpArtToFile: newdumpOutfile2 Write has fucked up")
+			h3, err := h.Write(pic.Picture)
+			g.Close()
+			h.Close()
 			fmt.Println(n3, "DumpArtToFile: bytes written successfully")
 		}
 		outfile22 := resizeImage(newdumpOutFile2, newdumpOutFileThumb)
+		CreateFolderJpgImageInfoMap(outfile22)
 		return artist, album, title, genre, outfile22
 	}
 }
@@ -321,10 +324,10 @@ func TaGmap(apath string, apage int, idx int) (TaGmaP Tagmap) {
 		TaGmaP.Idx = index
 		TaGmaP.HttpAddr = httpaddr
 		TaGmaP.Duration = "None"
-		TaGmaP.ArtStart = "None"
-		TaGmaP.AlbStart = "None"
-		TaGmaP.TitStart = "None"
-		TaGmaP.Howl = ""
+		// TaGmaP.ArtStart = "None"
+		// TaGmaP.AlbStart = "None"
+		// TaGmaP.TitStart = "None"
+		// TaGmaP.Howl = ""
 		client, ctx, cancel, err := Connect("mongodb://db:27017/ampgodb")
 		CheckError(err, "TaGmap: Connections has failed")
 		defer Close(client, ctx, cancel)
@@ -451,17 +454,17 @@ func gDurationInfo(filename string) map[string]string {
 	return durinfo
 }
 
-func startsWith(astring string) string {
-	if len(astring) > 3 {
-		if astring[3:] == "The" || astring[3:] == "the" {
-			return strings.ToUpper(astring[4:5])
-		} else {
-			return strings.ToUpper(astring[:1])
-		}
-	} else {
-		return strings.ToUpper(astring[:1])
-	}
-}
+// func startsWith(astring string) string {
+// 	if len(astring) > 3 {
+// 		if astring[3:] == "The" || astring[3:] == "the" {
+// 			return strings.ToUpper(astring[4:5])
+// 		} else {
+// 			return strings.ToUpper(astring[:1])
+// 		}
+// 	} else {
+// 		return strings.ToUpper(astring[:1])
+// 	}
+// }
 
 func UpdateMainDB(m2 map[string]string) (Doko Tagmap) {
 	log.Println(m2["filename"])
@@ -492,10 +495,10 @@ func UpdateMainDB(m2 map[string]string) (Doko Tagmap) {
 	Doko.PicHttpAddr = m2["picHttpAddr"]
 	Doko.HttpAddr = m2["httpaddr"]
 	Doko.Duration = duration["duration"]
-	Doko.ArtStart = startsWith(m2["artist"])
-	Doko.AlbStart = strings.ToUpper(m2["album"][:1])
-	Doko.TitStart = strings.ToUpper(m2["title"][:1])
-	Doko.Howl = m2["howl"]
+	// Doko.ArtStart = startsWith(m2["artist"])
+	// Doko.AlbStart = strings.ToUpper(m2["album"][:1])
+	// Doko.TitStart = strings.ToUpper(m2["title"][:1])
+	// Doko.Howl = m2["howl"]
 	client, ctx, cancel, err := Connect("mongodb://db:27017/ampgodb")
 	CheckError(err, "UpdateMainDB: Connections has failed")
 	defer Close(client, ctx, cancel)

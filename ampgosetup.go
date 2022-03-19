@@ -52,16 +52,25 @@ func CheckError(err error, msg string) {
 	}
 }
 
-// func durationVisit(pAth string, f os.FileInfo, err error) error {
-// 	ext := path.Ext(pAth)
-// 	if ext == ".mp3info" {
-// 		InsertDurationInfo(pAth)
-// 	} else {
-// 		fmt.Println("WTF are you?")
-// 		fmt.Println(pAth)
-// 	}
-// 	return nil
-// }
+func durationVisit(pAth string, f os.FileInfo, err error) error {
+	ext := path.Ext(pAth)
+	if ext == ".mp3info" {
+		InsertDurationInfo(pAth)
+	} else {
+		fmt.Println("WTF are you?")
+		fmt.Println(pAth)
+	}
+	return nil
+}
+
+func imgInfoVisit(pAth string, f os.FileInfo, err error) error {
+	ext := path.Ext(pAth)
+	if ext == ".jpg" {
+		CreateFolderJpgImageInfoMap(pAth)
+		fmt.Println("FOOUND JPG")
+	}
+	return nil
+}
 
 var titlepage int = 0
 var ii int = 0
@@ -70,12 +79,7 @@ func visit(pAth string, f os.FileInfo, err error) error {
 	log.Println(pAth)
 
 	ext := path.Ext(pAth)
-	if ext == ".jpg" {
-		CreateFolderJpgImageInfoMap(pAth)
-		fmt.Println("FOOUND JPG")
-	} else if ext == ".mp3info" {
-		InsertDurationInfo(pAth)
-	} else if ext == ".mp3" {
+	if ext == ".mp3" {
 		if ii < OffSet {
 			ii++
 			titlepage = 1
@@ -126,9 +130,11 @@ func Setup() {
 	log.Println(ti)
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	// log.Println("starting duration walk")
-	// filepath.Walk(os.Getenv("AMPGO_MEDIA_PATH"), durationVisit)
-	// log.Println("duration walk is complete")
+	log.Println("starting duration walk")
+	filepath.Walk(os.Getenv("AMPGO_MEDIA_PATH"), durationVisit)
+	log.Println("duration walk is complete")
+	log.Println("starting imgInfoDuration walk")
+	filepath.Walk(os.Getenv("AMPGO_MEDIA_PATH"), imgInfoVisit)
 
 	log.Println("starting walk")
 	filepath.Walk(os.Getenv("AMPGO_MEDIA_PATH"), visit)
