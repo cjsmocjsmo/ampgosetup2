@@ -282,6 +282,7 @@ func DumpArtToFile(apath string) (string, string, string, string, string) {
 		pic, ok := f.(id3v2.PictureFrame)
 		if !ok {
 			log.Fatal("DumpArtToFile: Couldn't assert picture frame")
+			b64image = "None"
 			// CreateFolderJpgImageInfoMap(os.Getenv("AMPGO_NO_ART_PIC_PATH"))
 			// return artist, album, title, genre
 		}
