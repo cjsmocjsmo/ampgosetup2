@@ -173,18 +173,17 @@ func Setup() {
 	}
 	log.Println("UpdateMainDB is complete ")
 
-	// log.Println("starting GetPicForAlbum ")
-	// var wg133 sync.WaitGroup
-	// for _, alb := range dalb {
-	// 	wg133.Add(1)
-	// 	go func(alb string) {
-	// 		zoo := GetPicForAlbum(alb)
-	// 		fmt.Println(zoo)
-	// 		wg133.Done()
-	// 	}(alb)
-	// 	wg133.Wait()
-	// }
-	// log.Println("GetPicForAlbum is complete")
+	log.Println("starting GetPicForAlbum ")
+	var wg133 sync.WaitGroup
+	for _, alb := range dalb {
+		wg133.Add(1)
+		go func(alb string) {
+			GetPicForAlbum(alb)
+			wg133.Done()
+		}(alb)
+		wg133.Wait()
+	}
+	log.Println("GetPicForAlbum is complete")
 
 	// //AggArtist
 	// log.Println("starting UpdateMainDB")

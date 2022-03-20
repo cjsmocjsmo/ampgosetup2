@@ -25,23 +25,23 @@ import (
 
 // Tagmap exported
 type Tagmap struct {
-	Dirpath     string `bson:"dirpath"`
-	Filename    string `bson:"filename"`
-	Extension   string `bson:"extension"`
-	FileID      string `bson:"fileID"`
-	Filesize    string `bson:"filesize"`
-	Artist      string `bson:"artist"`
-	ArtistID    string `bson:"artistID"`
-	Album       string `bson:"album"`
-	AlbumID     string `bson:"albumID"`
-	Title       string `bson:"title"`
-	Genre       string `bson:"genre"`
-	TitlePage   string `bson:"titlepage"`
-	Image       string `bson:"image"`
-	PicHttpAddr string `bson:"picHttpAddr"`
-	Idx         string `bson:"idx"`
-	HttpAddr    string `bson:"httpaddr"`
-	Duration    string `bson:"duration"`
+	Dirpath   string `bson:"dirpath"`
+	Filename  string `bson:"filename"`
+	Extension string `bson:"extension"`
+	FileID    string `bson:"fileID"`
+	Filesize  string `bson:"filesize"`
+	Artist    string `bson:"artist"`
+	ArtistID  string `bson:"artistID"`
+	Album     string `bson:"album"`
+	AlbumID   string `bson:"albumID"`
+	Title     string `bson:"title"`
+	Genre     string `bson:"genre"`
+	TitlePage string `bson:"titlepage"`
+	Image     string `bson:"image"`
+	// PicHttpAddr string `bson:"picHttpAddr"`
+	Idx      string `bson:"idx"`
+	HttpAddr string `bson:"httpaddr"`
+	Duration string `bson:"duration"`
 }
 
 type ArtVieW2 struct {
@@ -63,16 +63,16 @@ type ArtVieW2 struct {
 // }
 
 type AlbVieW2 struct {
-	Artist      string              `bson:"artist"`
-	ArtistID    string              `bson:"artistID"`
-	Album       string              `bson:"album"`
-	AlbumID     string              `bson:"albumID"`
-	Songs       []map[string]string `bson:"songs"`
-	AlbumPage   string              `bson:"albumpage"`
-	NumSongs    string              `bson:"numsongs"`
-	PicPath     string              `bson:"picPath"`
-	Idx         string              `bson:"idx"`
-	PicHttpAddr string              `bson:"picHttpAddr"`
+	Artist    string              `bson:"artist"`
+	ArtistID  string              `bson:"artistID"`
+	Album     string              `bson:"album"`
+	AlbumID   string              `bson:"albumID"`
+	Songs     []map[string]string `bson:"songs"`
+	AlbumPage string              `bson:"albumpage"`
+	NumSongs  string              `bson:"numsongs"`
+	PicPath   string              `bson:"picPath"`
+	Idx       string              `bson:"idx"`
+	// PicHttpAddr string              `bson:"picHttpAddr"`
 }
 
 type Imageinfomap struct {
@@ -325,7 +325,7 @@ func InsAlbumID(alb string) {
 // 	return "Logging started"
 // }
 
-func GetPicForAlbum(alb string) map[string]string {
+func GetPicForAlbum(alb string) {
 	// startLibLogging()
 	log.Printf("GetPicForAlbum: %s this is alb", alb)
 	filter := bson.M{"album": alb}
@@ -340,16 +340,16 @@ func GetPicForAlbum(alb string) map[string]string {
 	}
 	log.Printf("GetPicForAlbum: %s this is album", alb)
 	log.Printf("GetPicForAlbum: %s this is AlbumID", albuminfo.AlbumID)
-	log.Printf("GetPicForAlbum: %s this is PicHttpAddr", albuminfo.PicHttpAddr)
+	// log.Printf("GetPicForAlbum: %s this is PicHttpAddr", albuminfo.PicHttpAddr)
 
 	var albinfo map[string]string = make(map[string]string)
 	albinfo["Album"] = alb
 	albinfo["AlbumID"] = albuminfo.AlbumID
-	albinfo["PicPath"] = albuminfo.PicHttpAddr
+	// albinfo["PicPath"] = albuminfo.PicHttpAddr
+	albinfo["PicPath"] = albuminfo.Image
 	AmpgoInsertOne("tempdb2", "artidpic", albinfo)
 	fmt.Println(albinfo)
 	log.Println(albinfo)
-	return albinfo
 }
 
 func InsArtistID(art string) {
@@ -599,7 +599,7 @@ func AlbPipeline(DAlb map[string]string, page int, idx int) (MyAlbview AlbVieW2)
 	MyAlbview.Songs = results
 	MyAlbview.AlbumPage = strconv.Itoa(page)
 	MyAlbview.Idx = strconv.Itoa(idx)
-	MyAlbview.PicHttpAddr = DAlb["picHttpAddr"]
+	// MyAlbview.PicHttpAddr = DAlb["picHttpAddr"]
 	return
 }
 
