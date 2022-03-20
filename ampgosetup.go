@@ -52,26 +52,6 @@ func CheckError(err error, msg string) {
 	}
 }
 
-func durationVisit(pAth string, f os.FileInfo, err error) error {
-	ext := path.Ext(pAth)
-	if ext == ".mp3info" {
-		InsertDurationInfo(pAth)
-	} else {
-		fmt.Println("WTF are you?")
-		fmt.Println(pAth)
-	}
-	return nil
-}
-
-func imgInfoVisit(pAth string, f os.FileInfo, err error) error {
-	ext := path.Ext(pAth)
-	if ext == ".jpg" {
-		CreateFolderJpgImageInfoMap(pAth)
-		fmt.Println("FOOUND JPG")
-	}
-	return nil
-}
-
 var titlepage int = 0
 var ii int = 0
 
@@ -79,7 +59,9 @@ func visit(pAth string, f os.FileInfo, err error) error {
 	log.Println(pAth)
 
 	ext := path.Ext(pAth)
-	if ext == ".mp3" {
+	if ext == ".mp3info" {
+		InsertDurationInfo(pAth)
+	} else if ext == ".mp3" {
 		if ii < OffSet {
 			ii++
 			titlepage = 1
@@ -130,11 +112,11 @@ func Setup() {
 	log.Println(ti)
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	log.Println("starting duration walk")
-	filepath.Walk(os.Getenv("AMPGO_MEDIA_PATH"), durationVisit)
-	log.Println("duration walk is complete")
-	log.Println("starting imgInfoDuration walk")
-	filepath.Walk(os.Getenv("AMPGO_MEDIA_PATH"), imgInfoVisit)
+	// log.Println("starting duration walk")
+	// filepath.Walk(os.Getenv("AMPGO_MEDIA_PATH"), durationVisit)
+	// log.Println("duration walk is complete")
+	// log.Println("starting imgInfoDuration walk")
+	// filepath.Walk(os.Getenv("AMPGO_MEDIA_PATH"), imgInfoVisit)
 
 	log.Println("starting walk")
 	filepath.Walk(os.Getenv("AMPGO_MEDIA_PATH"), visit)
@@ -191,134 +173,111 @@ func Setup() {
 	}
 	log.Println("UpdateMainDB is complete ")
 
-	log.Println("starting GetPicForAlbum ")
-	var wg133 sync.WaitGroup
-	for _, alb := range dalb {
-		wg133.Add(1)
-		go func(alb string) {
-			zoo := GetPicForAlbum(alb)
-			fmt.Println(zoo)
-			wg133.Done()
-		}(alb)
-		wg133.Wait()
-	}
-	log.Println("GetPicForAlbum is complete")
+	// log.Println("starting GetPicForAlbum ")
+	// var wg133 sync.WaitGroup
+	// for _, alb := range dalb {
+	// 	wg133.Add(1)
+	// 	go func(alb string) {
+	// 		zoo := GetPicForAlbum(alb)
+	// 		fmt.Println(zoo)
+	// 		wg133.Done()
+	// 	}(alb)
+	// 	wg133.Wait()
+	// }
+	// log.Println("GetPicForAlbum is complete")
 
 	// //AggArtist
-	log.Println("starting UpdateMainDB")
-	DistArtist := GDistArtist2()
-	log.Println("GDistArtist2 is complete ")
+	// log.Println("starting UpdateMainDB")
+	// DistArtist := GDistArtist2()
+	// log.Println("GDistArtist2 is complete ")
 
-	log.Println("starting GArtInfo2")
-	var wg5 sync.WaitGroup
-	// var wg15 sync.WaitGroup
-	var artpage int = 0
-	for artIdx, DArtt := range DistArtist {
-		if artIdx < OffSet {
-			artpage = 1
-		} else if artIdx%OffSet == 0 {
-			artpage++
-		} else {
-			artpage = artpage + 0
-		}
+	// log.Println("starting GArtInfo2")
+	// var wg5 sync.WaitGroup
+	// // var wg15 sync.WaitGroup
+	// var artpage int = 0
+	// for artIdx, DArtt := range DistArtist {
+	// 	if artIdx < OffSet {
+	// 		artpage = 1
+	// 	} else if artIdx%OffSet == 0 {
+	// 		artpage++
+	// 	} else {
+	// 		artpage = artpage + 0
+	// 	}
 
-		APL := ArtPipline(DArtt, artpage, artIdx)
+	// 	APL := ArtPipline(DArtt, artpage, artIdx)
 
-		wg5.Add(1)
-		go func(APL ArtVieW2) {
-			InsArtPipeline(APL)
-			wg5.Done()
-		}(APL)
-		wg5.Wait()
+	// 	wg5.Add(1)
+	// 	go func(APL ArtVieW2) {
+	// 		InsArtPipeline(APL)
+	// 		wg5.Done()
+	// 	}(APL)
+	// 	wg5.Wait()
 
-		// APL2 := ArtPipline2(DArtt, artpage, artIdx)
-
-		// wg15.Add(1)
-		// go func(APL2 ArtVieW3) {
-		// 	InsArtPipeline2(APL2)
-		// 	wg15.Done()
-		// }(APL2)
-		// wg15.Wait()
-	}
-	fmt.Println("AggArtists is complete")
-	log.Println("AggArtists is complete")
+	// }
+	// fmt.Println("AggArtists is complete")
+	// log.Println("AggArtists is complete")
 	// // ArtistOffSet()w11
 	// // fmt.Println("ArtistOffSet is complete")
 
 	// //AggAlbum
 	// fmt.Println("AggAlbum has started")
 
-	log.Println("Starting GDistAlbum3")
-	DistAlbum := GDistAlbum()
+	// log.Println("Starting GDistAlbum3")
+	// DistAlbum := GDistAlbum()
 
-	var wg6 sync.WaitGroup
-	var albpage int = 0
-	for albIdx, DAlb := range DistAlbum {
-		wg6.Add(1)
-		if albIdx < OffSet {
-			albpage = 1
-		} else if albIdx%OffSet == 0 {
-			albpage++
-		} else {
-			albpage = albpage + 0
-		}
-		APLX := AlbPipeline(DAlb, albpage, albIdx)
-		go func(APLX AlbVieW2) {
-			InsAlbViewID(APLX)
-			wg6.Done()
-		}(APLX)
-		wg6.Wait()
-	}
-	CreateRandomPicsDB()
+	// var wg6 sync.WaitGroup
+	// var albpage int = 0
+	// for albIdx, DAlb := range DistAlbum {
+	// 	wg6.Add(1)
+	// 	if albIdx < OffSet {
+	// 		albpage = 1
+	// 	} else if albIdx%OffSet == 0 {
+	// 		albpage++
+	// 	} else {
+	// 		albpage = albpage + 0
+	// 	}
+	// 	APLX := AlbPipeline(DAlb, albpage, albIdx)
+	// 	go func(APLX AlbVieW2) {
+	// 		InsAlbViewID(APLX)
+	// 		wg6.Done()
+	// 	}(APLX)
+	// 	wg6.Wait()
+	// }
+	// CreateRandomPicsDB()
 
-	CreateRandomPlaylistDB()
+	// CreateRandomPlaylistDB()
 
-	CreateCurrentPlayListNameDB()
+	// CreateCurrentPlayListNameDB()
 
-	var lines = []string{
-		"Go",
-		"is",
-		"the",
-		"best",
-		"programming",
-		"language",
-		"in",
-		"the",
-		"world",
-	}
+	// var lines = []string{
+	// 	"Go",
+	// 	"is",
+	// 	"the",
+	// 	"best",
+	// 	"programming",
+	// 	"language",
+	// 	"in",
+	// 	"the",
+	// 	"world",
+	// }
 
-	f, err := os.Create("setup.txt")
-	if err != nil {
-		log.Fatal(err)
-	}
-	// remember to close the file
-	defer f.Close()
+	// f, err := os.Create("setup.txt")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// // remember to close the file
+	// defer f.Close()
 
-	for _, line := range lines {
-		_, err := f.WriteString(line + "\n")
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
+	// for _, line := range lines {
+	// 	_, err := f.WriteString(line + "\n")
+	// 	if err != nil {
+	// 		log.Fatal(err)
+	// 	}
+	// }
 
 	// fmt.Println("AlbumOffSet is complete")
 	t2 := time.Now().Sub(ti)
 	fmt.Println(t2)
 	fmt.Println("THE END")
-
-	// func Update() {
-	// 	logtxtfile := os.Getenv("AMPGO_SETUP_LOG_PATH")
-	// 	// If the file doesn't exist, create it or append to the file
-	// 	file, err := os.OpenFile(logtxtfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
-	// 	if err != nil {
-	// 		log.Fatal(err)
-	// 	}
-	// 	log.SetOutput(file)
-	// 	log.Println("Logging started")
-
-	// ti = time.Now()
-	// fmt.Println(ti)
-	// log.Println(ti)
-	// runtime.GOMAXPROCS(runtime.NumCPU())
 
 }

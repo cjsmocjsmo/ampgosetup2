@@ -25,31 +25,23 @@ import (
 
 // Tagmap exported
 type Tagmap struct {
-	Dirpath   string `bson:"dirpath"`
-	Filename  string `bson:"filename"`
-	Extension string `bson:"extension"`
-	FileID    string `bson:"fileID"`
-	Filesize  string `bson:"filesize"`
-	Artist    string `bson:"artist"`
-	ArtistID  string `bson:"artistID"`
-	Album     string `bson:"album"`
-	AlbumID   string `bson:"albumID"`
-	Title     string `bson:"title"`
-	Genre     string `bson:"genre"`
-	TitlePage string `bson:"titlepage"`
-	Image     string `bson:"image"`
-	// PicID       string `bson:"picID"`
-	// PicDB       string `bson:"picDB"`
-	// PicPath     string `bson:"picPath"`
+	Dirpath     string `bson:"dirpath"`
+	Filename    string `bson:"filename"`
+	Extension   string `bson:"extension"`
+	FileID      string `bson:"fileID"`
+	Filesize    string `bson:"filesize"`
+	Artist      string `bson:"artist"`
+	ArtistID    string `bson:"artistID"`
+	Album       string `bson:"album"`
+	AlbumID     string `bson:"albumID"`
+	Title       string `bson:"title"`
+	Genre       string `bson:"genre"`
+	TitlePage   string `bson:"titlepage"`
+	Image       string `bson:"image"`
 	PicHttpAddr string `bson:"picHttpAddr"`
 	Idx         string `bson:"idx"`
 	HttpAddr    string `bson:"httpaddr"`
 	Duration    string `bson:"duration"`
-
-	// ArtStart string `bson:"artstart"`
-	// AlbStart string `bson:"albstart"`
-	// TitStart string `bson:"titstart"`
-	// Howl     string `bson:"howl"`
 }
 
 type ArtVieW2 struct {
@@ -263,46 +255,16 @@ func DumpArtToFile(apath string) (string, string, string, string, string) {
 	album := tag.Album()
 	title := tag.Title()
 	genre := tag.Genre()
-	// folderjpgcheck := folderjpg_check(apath)
-	// if folderjpgcheck.exists {
-	// 	CreateFolderJpgImageInfoMap(folderjpgcheck.path)
-	// 	return artist, album, title, genre, folderjpgcheck.path
-	// } else {
-	// 	// dumpOutFile2 := os.Getenv("AMPGO_THUMB_PATH") + tag.Artist() + "_-_" + tag.Album() + ".jpg"
-	// 	// newdumpOutFile2 := strings.Replace(dumpOutFile2, " ", "_", -1)
-	// 	// dumpOutFileThumb := os.Getenv("AMPGO_THUMB_PATH") + tag.Artist() + "_-_" + tag.Album() + "_thumb.jpg"
-	// 	// newdumpOutFileThumb := strings.Replace(dumpOutFileThumb, " ", "_", -1)
-
 	pictures := tag.GetFrames(tag.CommonID("Attached picture"))
-
-	// dir, _ := filepath.Split(apath)
-	// newfolderjpg_path := dir + "/folder.jpg"
 	var b64image string
 	for _, f := range pictures {
 		pic, ok := f.(id3v2.PictureFrame)
 		if !ok {
 			log.Fatal("DumpArtToFile: Couldn't assert picture frame")
-			b64image = "None"
-			// CreateFolderJpgImageInfoMap(os.Getenv("AMPGO_NO_ART_PIC_PATH"))
-			// return artist, album, title, genre
+			return artist, album, title, genre, "None"
 		}
 		b64image = bytesToBase64(pic.Picture)
-
-		// g, err := os.Create(newdumpOutFile2)
-		// CheckError(err, "DumpArtToFile: Unable to create newdumpOutFile2")
-		// h, err := os.Create(newfolderjpg_path)
-		// CheckError(err, "DumpArtToFile: Unable to create newdumpOutFile2")
-		// n3, err := g.Write(pic.Picture)
-		// CheckError(err, "DumpArtToFile: newdumpOutfile2 Write has fucked up")
-		// h3, err := h.Write(pic.Picture)
-		// CheckError(err, "DumpArtToFile: newdumpOutfile2 Write has fucked up")
-		// g.Close()
-		// h.Close()
-		// fmt.Println(n3, "DumpArtToFile: bytes written successfully")
-		// fmt.Println(h3, "DumpArtToFile: bytes written successfully")
 	}
-	// outfile22 := resizeImage(newdumpOutFile2, newdumpOutFileThumb)
-	// CreateFolderJpgImageInfoMap(outfile22)
 	return artist, album, title, genre, b64image
 
 }
@@ -330,17 +292,9 @@ func TaGmap(apath string, apage int, idx int) (TaGmaP Tagmap) {
 		TaGmaP.Genre = genre
 		TaGmaP.TitlePage = page
 		TaGmaP.Image = image
-		// TaGmaP.PicID = uuid
-		// TaGmaP.PicDB = "None"
-		// TaGmaP.PicPath = picpath
-		// TaGmaP.PicHttpAddr = pichttpaddr
 		TaGmaP.Idx = index
 		TaGmaP.HttpAddr = httpaddr
 		TaGmaP.Duration = "None"
-		// TaGmaP.ArtStart = "None"
-		// TaGmaP.AlbStart = "None"
-		// TaGmaP.TitStart = "None"
-		// TaGmaP.Howl = ""
 		client, ctx, cancel, err := Connect("mongodb://db:27017/ampgodb")
 		CheckError(err, "TaGmap: Connections has failed")
 		defer Close(client, ctx, cancel)
@@ -501,18 +455,10 @@ func UpdateMainDB(m2 map[string]string) (Doko Tagmap) {
 	Doko.Title = m2["title"]
 	Doko.Genre = m2["genre"]
 	Doko.Image = m2["image"]
-	// Doko.PicID = m2["picID"]
-	// Doko.PicDB = "thumbnails"
 	Doko.TitlePage = m2["titlepage"]
 	Doko.Idx = m2["idx"]
-	// Doko.PicPath = m2["picPath"]
-	// Doko.PicHttpAddr = m2["picHttpAddr"]
 	Doko.HttpAddr = m2["httpaddr"]
 	Doko.Duration = duration["duration"]
-	// Doko.ArtStart = startsWith(m2["artist"])
-	// Doko.AlbStart = strings.ToUpper(m2["album"][:1])
-	// Doko.TitStart = strings.ToUpper(m2["title"][:1])
-	// Doko.Howl = m2["howl"]
 	client, ctx, cancel, err := Connect("mongodb://db:27017/ampgodb")
 	CheckError(err, "UpdateMainDB: Connections has failed")
 	defer Close(client, ctx, cancel)
@@ -717,25 +663,25 @@ func create_image_info_map(i int, afile string, page int) Imageinfomap {
 	return ImageInfoMap
 }
 
-func CreateFolderJpgImageInfoMap(afile string) {
-	itype := get_type(afile)
-	dir, filename := filepath.Split(afile)
-	image := convertToBase64(afile)
-	image_size := get_image_size(afile)
-	image_http_path := create_image_http_addr(afile)
-	var ImageInfoMap Imageinfomap
-	ImageInfoMap.Dirpath = dir
-	ImageInfoMap.Filename = filename
-	ImageInfoMap.Image = image
-	ImageInfoMap.Imagesize = image_size
-	ImageInfoMap.ImageHttpAddr = image_http_path
-	ImageInfoMap.IType = itype
-	client, ctx, cancel, err := Connect("mongodb://db:27017/ampgo")
-	CheckError(err, "create_image_info_map: Connections has failed")
-	defer Close(client, ctx, cancel)
-	_, err2 := InsertOne(client, ctx, "foldercoverart", "foldercoverart", ImageInfoMap)
-	CheckError(err2, "create_image_info_map: coverart insertion has failed")
-}
+// func CreateFolderJpgImageInfoMap(afile string) {
+// 	itype := get_type(afile)
+// 	dir, filename := filepath.Split(afile)
+// 	image := convertToBase64(afile)
+// 	image_size := get_image_size(afile)
+// 	image_http_path := create_image_http_addr(afile)
+// 	var ImageInfoMap Imageinfomap
+// 	ImageInfoMap.Dirpath = dir
+// 	ImageInfoMap.Filename = filename
+// 	ImageInfoMap.Image = image
+// 	ImageInfoMap.Imagesize = image_size
+// 	ImageInfoMap.ImageHttpAddr = image_http_path
+// 	ImageInfoMap.IType = itype
+// 	client, ctx, cancel, err := Connect("mongodb://db:27017/ampgo")
+// 	CheckError(err, "create_image_info_map: Connections has failed")
+// 	defer Close(client, ctx, cancel)
+// 	_, err2 := InsertOne(client, ctx, "foldercoverart", "foldercoverart", ImageInfoMap)
+// 	CheckError(err2, "create_image_info_map: coverart insertion has failed")
+// }
 
 func bytesToBase64(b []byte) string {
 	var b64 string
