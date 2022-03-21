@@ -7,13 +7,14 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	// "image"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
+	// "strings"
 	"time"
 
 	"github.com/bogem/id3v2"
@@ -70,20 +71,20 @@ type AlbVieW2 struct {
 	Songs     []map[string]string `bson:"songs"`
 	AlbumPage string              `bson:"albumpage"`
 	NumSongs  string              `bson:"numsongs"`
-	PicPath   string              `bson:"picPath"`
+	Image     string              `bson:"image"`
 	Idx       string              `bson:"idx"`
 	// PicHttpAddr string              `bson:"picHttpAddr"`
 }
 
 type Imageinfomap struct {
-	Dirpath       string `bson:"dirpath"`
-	Filename      string `bson:"filename"`
-	Image         string `bson:"image"`
-	Imagesize     string `bson:"imagesize"`
-	ImageHttpAddr string `bson:"imageHttpAddr"`
-	Index         string `bson:"index"`
-	IType         string `bson:"itype"`
-	Page          string `bson:"page"`
+	Dirpath  string `bson:"dirpath"`
+	Filename string `bson:"filename"`
+	Image    string `bson:"image"`
+	// Imagesize string `bson:"imagesize"`
+	// ImageHttpAddr string `bson:"imageHttpAddr"`
+	Index string `bson:"index"`
+	IType string `bson:"itype"`
+	Page  string `bson:"page"`
 }
 
 func StartLibLogging() string {
@@ -595,7 +596,7 @@ func AlbPipeline(DAlb map[string]string, page int, idx int) (MyAlbview AlbVieW2)
 	MyAlbview.Album = DAlb["album"]
 	MyAlbview.AlbumID = DAlb["albumID"]
 	MyAlbview.NumSongs = strconv.Itoa(songcount)
-	MyAlbview.PicPath = DAlb["picPath"]
+	MyAlbview.Image = DAlb["image"]
 	MyAlbview.Songs = results
 	MyAlbview.AlbumPage = strconv.Itoa(page)
 	MyAlbview.Idx = strconv.Itoa(idx)
@@ -616,52 +617,83 @@ func InsAlbViewID(MyAlbview AlbVieW2) {
 /////////////////////////////////////////////////////////////////////////////////
 
 //RanPics exported
-func CreateRandomPicsDB() []Imageinfomap {
-	thumb_path := os.Getenv("AMPGO_THUMB_PATH")
-	thumb_glob_path := thumb_path + "/*.jpg"
-	thumb_glob, err := filepath.Glob(thumb_glob_path)
-	CheckError(err, "CreateRandomPicsDB: CheckThumbDB has fucked up")
-	var BulkImages []Imageinfomap
-	var page int
-	for i, v := range thumb_glob {
-		if i < 5 {
-			page = 1
-		} else if i%5 == 0 {
-			page++
+func CreateRandomPicsDB() {
+	allalbums := AmpgoFind("tempdb2", "artidpic", "None", "None")
+	page := 1
+	ofs := os.Getenv("AMPGO_NUM_RAND_PICS")
+	offset, err := strconv.Atoi(ofs)
+	CheckError(err, "createrandom db has failed")
+
+	for idx, alb := range allalbums {
+		var coverart map[string]string = make(map[string]string)
+		coverart["image"] = alb["image"]
+		coverart["album"] = alb["album"]
+		coverart["albumid"] = alb["albumid"]
+		if idx%offset == 0 {
+			page += 1
+			coverart["idx"] = strconv.Itoa(idx)
+			coverart["page"] = strconv.Itoa(page)
+			client, ctx, cancel, err := Connect("mongodb://db:27017/ampgodb")
+			CheckError(err, "AmpgoInsertOne: Connections has failed")
+			defer Close(client, ctx, cancel)
+			_, err2 := InsertOne(client, ctx, "coverart", "coverart", coverart)
+			CheckError(err2, "AmpgoInsertOne has failed")
 		} else {
-			page = page + 0
+			coverart["idx"] = strconv.Itoa(idx)
+			coverart["page"] = strconv.Itoa(page)
+			client, ctx, cancel, err := Connect("mongodb://db:27017/ampgodb")
+			CheckError(err, "AmpgoInsertOne: Connections has failed")
+			defer Close(client, ctx, cancel)
+			_, err2 := InsertOne(client, ctx, "coverart", "coverart", coverart)
+			CheckError(err2, "AmpgoInsertOne has failed")
 		}
-		var iim Imageinfomap = create_image_info_map(i, v, page)
-		BulkImages = append(BulkImages, iim)
 	}
-	return BulkImages
+
+	// thumb_path := os.Getenv("AMPGO_THUMB_PATH")
+	// thumb_glob_path := thumb_path + "/*.jpg"
+	// thumb_glob, err := filepath.Glob(thumb_glob_path)
+	// CheckError(err, "CreateRandomPicsDB: CheckThumbDB has fucked up")
+	// var BulkImages []Imageinfomap
+	// var page int
+	// for i, v := range thumb_glob {
+	// 	if i < 5 {
+	// 		page = 1
+	// 	} else if i%5 == 0 {
+	// 		page++
+	// 	} else {
+	// 		page = page + 0
+	// 	}
+	// 	var iim Imageinfomap = create_image_info_map(i, v, page)
+	// 	BulkImages = append(BulkImages, iim)
+	// }
+
 }
 
-func create_image_info_map(i int, afile string, page int) Imageinfomap {
-	itype := get_type(afile)
-	dir, filename := filepath.Split(afile)
-	image := convertToBase64(afile)
-	image_size := get_image_size(afile)
-	image_http_path := create_image_http_addr(afile)
-	ii := i + 1
-	var ImageInfoMap Imageinfomap
-	ImageInfoMap.Dirpath = dir
-	ImageInfoMap.Filename = filename
-	ImageInfoMap.Image = image
-	ImageInfoMap.Imagesize = image_size
-	ImageInfoMap.ImageHttpAddr = image_http_path
-	ImageInfoMap.Index = strconv.Itoa(ii)
-	ImageInfoMap.IType = itype
-	ImageInfoMap.Page = strconv.Itoa(page)
-	client, ctx, cancel, err := Connect("mongodb://db:27017/ampgo")
-	CheckError(err, "create_image_info_map: Connections has failed")
-	defer Close(client, ctx, cancel)
-	_, err2 := InsertOne(client, ctx, "coverart", "coverart", ImageInfoMap)
-	CheckError(err2, "create_image_info_map: coverart insertion has failed")
-	_, err3 := InsertOne(client, ctx, "foldercoverart", "foldercoverart", ImageInfoMap)
-	CheckError(err3, "create_image_info_map: coverart insertion has failed")
-	return ImageInfoMap
-}
+// func create_image_info_map(i int, afile string, page int) Imageinfomap {
+// 	// itype := get_type(afile)
+// 	dir, filename := filepath.Split(afile)
+// 	image := convertToBase64(afile)
+// 	// image_size := get_image_size(afile)
+// 	// image_http_path := create_image_http_addr(afile)
+// 	ii := i + 1
+// 	var ImageInfoMap Imageinfomap
+// 	ImageInfoMap.Dirpath = dir
+// 	ImageInfoMap.Filename = filename
+// 	ImageInfoMap.Image = image
+// 	// ImageInfoMap.Imagesize = image_size
+// 	// ImageInfoMap.ImageHttpAddr = image_http_path
+// 	ImageInfoMap.Index = strconv.Itoa(ii)
+// 	// ImageInfoMap.IType = itype
+// 	ImageInfoMap.Page = strconv.Itoa(page)
+// 	client, ctx, cancel, err := Connect("mongodb://db:27017/ampgo")
+// 	CheckError(err, "create_image_info_map: Connections has failed")
+// 	defer Close(client, ctx, cancel)
+// 	_, err2 := InsertOne(client, ctx, "coverart", "coverart", ImageInfoMap)
+// 	CheckError(err2, "create_image_info_map: coverart insertion has failed")
+// 	_, err3 := InsertOne(client, ctx, "foldercoverart", "foldercoverart", ImageInfoMap)
+// 	CheckError(err3, "create_image_info_map: coverart insertion has failed")
+// 	return ImageInfoMap
+// }
 
 // func CreateFolderJpgImageInfoMap(afile string) {
 // 	itype := get_type(afile)
@@ -718,25 +750,25 @@ func convertToBase64(apath string) string {
 	return b64
 }
 
-func get_type(afile string) string {
-	if strings.Contains(afile, "thumb") {
-		return "thumb"
-	} else {
-		return "original"
-	}
-}
+// func get_type(afile string) string {
+// 	if strings.Contains(afile, "thumb") {
+// 		return "thumb"
+// 	} else {
+// 		return "original"
+// 	}
+// }
 
-func get_image_size(apath string) string {
-	fi, err := os.Stat(apath)
-	CheckError(err, "get_image_size: os.stat has failed")
-	size := fi.Size()
-	newsize := int(size)
-	return strconv.Itoa(newsize)
-}
+// func get_image_size(apath string) string {
+// 	fi, err := os.Stat(apath)
+// 	CheckError(err, "get_image_size: os.stat has failed")
+// 	size := fi.Size()
+// 	newsize := int(size)
+// 	return strconv.Itoa(newsize)
+// }
 
-func create_image_http_addr(aimage string) string {
-	return os.Getenv("AMPGO_SERVER_ADDRESS") + ":" + os.Getenv("AMPGO_SERVER_PORT") + aimage[5:]
-}
+// func create_image_http_addr(aimage string) string {
+// 	return os.Getenv("AMPGO_SERVER_ADDRESS") + ":" + os.Getenv("AMPGO_SERVER_PORT") + aimage[5:]
+// }
 
 type randDb struct {
 	PlayListName  string              `bson:"playlistname"`

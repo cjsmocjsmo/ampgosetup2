@@ -242,7 +242,7 @@ func Setup() {
 	// 	}(APLX)
 	// 	wg6.Wait()
 	// }
-	// CreateRandomPicsDB()
+	CreateRandomPicsDB()
 
 	// CreateRandomPlaylistDB()
 
