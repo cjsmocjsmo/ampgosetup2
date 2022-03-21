@@ -347,7 +347,7 @@ func GetPicForAlbum(alb string) {
 	albinfo["Album"] = alb
 	albinfo["AlbumID"] = albuminfo.AlbumID
 	// albinfo["PicPath"] = albuminfo.PicHttpAddr
-	albinfo["PicPath"] = albuminfo.Image
+	albinfo["Image"] = albuminfo.Image
 	AmpgoInsertOne("tempdb2", "artidpic", albinfo)
 	fmt.Println(albinfo)
 	log.Println(albinfo)
@@ -619,14 +619,14 @@ func InsAlbViewID(MyAlbview AlbVieW2) {
 //RanPics exported
 func CreateRandomPicsDB() {
 	allalbums := AmpgoFind("tempdb2", "artidpic", "None", "None")
-	page := 1
+	page := 0
 	ofs := os.Getenv("AMPGO_NUM_RAND_PICS")
 	offset, err := strconv.Atoi(ofs)
 	CheckError(err, "createrandom db has failed")
 
 	for idx, alb := range allalbums {
 		var coverart map[string]string = make(map[string]string)
-		coverart["image"] = alb["PicPath"]
+		coverart["image"] = alb["Image"]
 		coverart["album"] = alb["Album"]
 		coverart["albumid"] = alb["AlbumID"]
 		if idx%offset == 0 {

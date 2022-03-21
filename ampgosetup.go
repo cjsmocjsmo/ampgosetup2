@@ -184,6 +184,7 @@ func Setup() {
 		wg133.Wait()
 	}
 	log.Println("GetPicForAlbum is complete")
+	CreateRandomPicsDB()
 
 	// //AggArtist
 	// log.Println("starting UpdateMainDB")
@@ -242,37 +243,10 @@ func Setup() {
 	// 	}(APLX)
 	// 	wg6.Wait()
 	// }
-	CreateRandomPicsDB()
 
 	// CreateRandomPlaylistDB()
 
 	// CreateCurrentPlayListNameDB()
-
-	// var lines = []string{
-	// 	"Go",
-	// 	"is",
-	// 	"the",
-	// 	"best",
-	// 	"programming",
-	// 	"language",
-	// 	"in",
-	// 	"the",
-	// 	"world",
-	// }
-
-	// f, err := os.Create("setup.txt")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// // remember to close the file
-	// defer f.Close()
-
-	// for _, line := range lines {
-	// 	_, err := f.WriteString(line + "\n")
-	// 	if err != nil {
-	// 		log.Fatal(err)
-	// 	}
-	// }
 
 	// fmt.Println("AlbumOffSet is complete")
 	t2 := time.Now().Sub(ti)
