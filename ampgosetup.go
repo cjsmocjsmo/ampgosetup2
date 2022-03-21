@@ -186,67 +186,67 @@ func Setup() {
 	log.Println("GetPicForAlbum is complete")
 	CreateRandomPicsDB()
 
-	// //AggArtist
-	// log.Println("starting UpdateMainDB")
-	// DistArtist := GDistArtist2()
-	// log.Println("GDistArtist2 is complete ")
+	//AggArtist
+	log.Println("starting UpdateMainDB")
+	DistArtist := GDistArtist2()
+	log.Println("GDistArtist2 is complete ")
 
-	// log.Println("starting GArtInfo2")
-	// var wg5 sync.WaitGroup
-	// // var wg15 sync.WaitGroup
-	// var artpage int = 0
-	// for artIdx, DArtt := range DistArtist {
-	// 	if artIdx < OffSet {
-	// 		artpage = 1
-	// 	} else if artIdx%OffSet == 0 {
-	// 		artpage++
-	// 	} else {
-	// 		artpage = artpage + 0
-	// 	}
+	log.Println("starting GArtInfo2")
+	var wg5 sync.WaitGroup
+	// var wg15 sync.WaitGroup
+	var artpage int = 0
+	for artIdx, DArtt := range DistArtist {
+		if artIdx < OffSet {
+			artpage = 1
+		} else if artIdx%OffSet == 0 {
+			artpage++
+		} else {
+			artpage = artpage + 0
+		}
 
-	// 	APL := ArtPipline(DArtt, artpage, artIdx)
+		APL := ArtPipline(DArtt, artpage, artIdx)
 
-	// 	wg5.Add(1)
-	// 	go func(APL ArtVieW2) {
-	// 		InsArtPipeline(APL)
-	// 		wg5.Done()
-	// 	}(APL)
-	// 	wg5.Wait()
+		wg5.Add(1)
+		go func(APL ArtVieW2) {
+			InsArtPipeline(APL)
+			wg5.Done()
+		}(APL)
+		wg5.Wait()
 
-	// }
-	// fmt.Println("AggArtists is complete")
-	// log.Println("AggArtists is complete")
+	}
+	fmt.Println("AggArtists is complete")
+	log.Println("AggArtists is complete")
 	// // ArtistOffSet()w11
 	// // fmt.Println("ArtistOffSet is complete")
 
-	// //AggAlbum
-	// fmt.Println("AggAlbum has started")
+	//AggAlbum
+	fmt.Println("AggAlbum has started")
 
-	// log.Println("Starting GDistAlbum3")
-	// DistAlbum := GDistAlbum()
+	log.Println("Starting GDistAlbum3")
+	DistAlbum := GDistAlbum()
 
-	// var wg6 sync.WaitGroup
-	// var albpage int = 0
-	// for albIdx, DAlb := range DistAlbum {
-	// 	wg6.Add(1)
-	// 	if albIdx < OffSet {
-	// 		albpage = 1
-	// 	} else if albIdx%OffSet == 0 {
-	// 		albpage++
-	// 	} else {
-	// 		albpage = albpage + 0
-	// 	}
-	// 	APLX := AlbPipeline(DAlb, albpage, albIdx)
-	// 	go func(APLX AlbVieW2) {
-	// 		InsAlbViewID(APLX)
-	// 		wg6.Done()
-	// 	}(APLX)
-	// 	wg6.Wait()
-	// }
+	var wg6 sync.WaitGroup
+	var albpage int = 0
+	for albIdx, DAlb := range DistAlbum {
+		wg6.Add(1)
+		if albIdx < OffSet {
+			albpage = 1
+		} else if albIdx%OffSet == 0 {
+			albpage++
+		} else {
+			albpage = albpage + 0
+		}
+		APLX := AlbPipeline(DAlb, albpage, albIdx)
+		go func(APLX AlbVieW2) {
+			InsAlbViewID(APLX)
+			wg6.Done()
+		}(APLX)
+		wg6.Wait()
+	}
 
-	// CreateRandomPlaylistDB()
+	CreateRandomPlaylistDB()
 
-	// CreateCurrentPlayListNameDB()
+	CreateCurrentPlayListNameDB()
 
 	// fmt.Println("AlbumOffSet is complete")
 	t2 := time.Now().Sub(ti)
