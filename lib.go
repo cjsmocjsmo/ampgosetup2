@@ -626,9 +626,9 @@ func CreateRandomPicsDB() {
 
 	for idx, alb := range allalbums {
 		var coverart map[string]string = make(map[string]string)
-		coverart["image"] = alb["image"]
-		coverart["album"] = alb["album"]
-		coverart["albumid"] = alb["albumid"]
+		coverart["image"] = alb["PicPath"]
+		coverart["album"] = alb["Album"]
+		coverart["albumid"] = alb["AlbumID"]
 		if idx%offset == 0 {
 			page += 1
 			coverart["idx"] = strconv.Itoa(idx)
@@ -733,22 +733,22 @@ func ToBase64(b []byte) string {
 	return base64.StdEncoding.EncodeToString(b)
 }
 
-func convertToBase64(apath string) string {
-	bytes, err := ioutil.ReadFile(apath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	var b64 string
-	mimeType := http.DetectContentType(bytes)
-	switch mimeType {
-	case "image/jpeg":
-		b64 += "data:image/jpeg;base64,"
-	case "image/png":
-		b64 += "data:image/png;base64,"
-	}
-	b64 += ToBase64(bytes)
-	return b64
-}
+// func convertToBase64(apath string) string {
+// 	bytes, err := ioutil.ReadFile(apath)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	var b64 string
+// 	mimeType := http.DetectContentType(bytes)
+// 	switch mimeType {
+// 	case "image/jpeg":
+// 		b64 += "data:image/jpeg;base64,"
+// 	case "image/png":
+// 		b64 += "data:image/png;base64,"
+// 	}
+// 	b64 += ToBase64(bytes)
+// 	return b64
+// }
 
 // func get_type(afile string) string {
 // 	if strings.Contains(afile, "thumb") {
